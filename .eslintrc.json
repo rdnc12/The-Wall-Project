@@ -49,10 +49,9 @@
         "prefer-const": "error",
         "strict": "off",
         "flowtype/define-flow-type": "warn",
-        "flowtype/use-flow-type": "warn",
+        "flowtype/use-flow-type": "warn"
     },
     "globals": {
-        // Flow
         "Iterator": true,
         " $Keys": true
     },
