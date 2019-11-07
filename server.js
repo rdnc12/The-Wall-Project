@@ -1,5 +1,4 @@
 
-
 const async = () => {
     return Promise.resolve();
 };
@@ -8,7 +7,7 @@ const config = require('./config/index');
 // after solving async function. First make a connection in mongoDB then
 async()
     .then(() => require('./db').init())
-    .then(() => require('./config').init())
+    .then(() => require('./config'))
     .then(() => require('./app').init())
     .then((app) => {
         app.listen(config.port, () => console.log(`Server started perfectly on ${config.port}...`));
