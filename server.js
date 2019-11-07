@@ -48,12 +48,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         min: 3,
-        max: 30
+        max: 20
     },
     password: {
         type: String,
         required: true,
-        min: 6
+        min: 6,
+        max: 20
     },
     email: {
         type: String,
@@ -199,8 +200,8 @@ app.route("/register")
         if (validator.isEmail(emailNew)) {
             if (!validator.isEmpty(usernameNew)) {
                 if (!validator.isEmpty(passwordNew)) {
-                    if (validator.isLength(usernameNew, { min: 3, max: 8 })) {
-                        if (validator.isLength(passwordNew, { min: 6 })) {
+                    if (validator.isLength(usernameNew, { min: 3, max: 20 })) {
+                        if (validator.isLength(passwordNew, { min: 6, max: 20 })) {
                             await User.findOne({ username: usernameNew },
                                 (err, foundUser) => {
                                     if (!err) {
