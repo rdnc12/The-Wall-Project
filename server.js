@@ -16,37 +16,61 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const config = require('./config');
 
-
+// config start
 const app = express();
-//for making ejs usable in views folder
-app.set("view engine", "ejs");
-// for post requests
-app.use(bodyParser.urlencoded({ extended: true }));
-//for using css js img files
-app.use(express.static("public"));
-app.use('/libs', express.static(path.join(__dirname, 'node_modules')));
-console.log(path.join(__dirname, 'node_modules'));
 
+app.set("view engine", "ejs"); //for making ejs usable in views folder
+app.use(bodyParser.urlencoded({ extended: true })); // for post requests
+app.use(express.static("public")); //for using css js img files
+//app.use('/libs', express.static(path.join(__dirname, 'node_modules')));
 app.use(session({
     secret: "erdinc",
     resave: false,
     saveUninitialized: false
 }));
-
-
 app.use(passport.initialize());
 app.use(passport.session());
+//config end
 
+
+// mongoose config
+console.log(Date.now());
 mongoose.connect(config.connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 mongoose.set("useCreateIndex", true);
 
+
+// mongoose schema config
+
+const postSchema = new mongoose.Schema({
+    comment: {
+        type: String,
+        max: 500,
+        default: 0
+    },
+    time: {
+        type: Date,
+        default: Date.now
+    },
+    like: {
+        type: Number,
+        default: 0
+    },
+    dislike: {
+        type: Number,
+        default: 0
+    }
+});
+
+const Post = new mongoose.model("Post", postSchema);
+
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
+        unique: true,
         min: 3,
         max: 20
     },
@@ -58,6 +82,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique: true,
         required: true
     },
     gender: {
@@ -74,30 +99,7 @@ const userSchema = new mongoose.Schema({
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
 
-const User = mongoose.model("User", userSchema);
-
-const postSchema = new mongoose.Schema({
-    comment: {
-        type: String,
-        max: 500
-    },
-    time: {
-        type: Date,
-        default: Date.now
-    },
-    like: {
-        type: Number,
-        default: 0
-    },
-    dislike: {
-        type: Number,
-        default: 0
-    }
-});
-postSchema.plugin(passportLocalMongoose);
-postSchema.plugin(findOrCreate);
-
-const Post = mongoose.model("Post", postSchema);
+const User = new mongoose.model("User", userSchema);
 
 passport.use(User.createStrategy());
 passport.serializeUser(function(user, done) {
@@ -109,6 +111,7 @@ passport.deserializeUser(function(id, done) {
         done(err, user);
     });
 });
+
 
 /// GOOGLE LOGIN ///
 passport.use(new GoogleStrategy({
@@ -143,20 +146,21 @@ app.get('/', (req, res) => {
 /// Login page
 app.route("/login")
     .get((req, res) => {
-        res.render("login");
+        res.render("loginpage");
     })
     .post((req, res) => {
         const user = new User({
             username: req.body.username,
             password: req.body.password
         });
-        if (!validator.isEmpty(usernameInput) || !validator.isEmpty(passwordInput)) {
+        if (validator.isEmpty(req.body.username) || validator.isEmpty(req.body.password)) {
             res.send("Username and Password cannot be empty");
         } else {
             req.login(user, (err) => {
                 if (!err) {
                     passport.authenticate("local", { failureRedirect: '/login' })(req, res, () => {
-                        res.redirect("/home");
+                        res.redirect('/comment');
+                        //res.render("comment", { usernameLogin: req.body.username });
                     });
                 } else {
                     res.status(401).send("401 Unauthorized");
@@ -164,6 +168,23 @@ app.route("/login")
             });
         }
     });
+
+app.get('/comment', (req, res) => {
+    User.find({ "username": { $ne: null } }, (err, foundUser) => {
+        if (!err) {
+            if (foundUser) {
+                console.log(typeof foundUser.comment);
+
+                if (foundUser.comment !== '' || foundUser.comment !== null || typeof foundUser.comment !== undefined) {
+                    res.render('comment', { usersWithComments: foundUser });
+                }
+            }
+        } else {
+            console.log(err);
+            // res.status(400).send();
+        }
+    });
+});
 /// GOOGLE LOGIN SIDE ///
 app.get("/auth/google",
     passport.authenticate("google", { scope: ["profile"] })
@@ -190,7 +211,7 @@ app.route("/register")
     .get((req, res) => {
         res.render("registerpage");
     })
-    .post(async(req, res) => {
+    .post((req, res) => {
         let usernameNew = req.body.username;
         let passwordNew = req.body.password;
         let genderNew = req.body.gender;
@@ -202,29 +223,22 @@ app.route("/register")
                 if (!validator.isEmpty(passwordNew)) {
                     if (validator.isLength(usernameNew, { min: 3, max: 20 })) {
                         if (validator.isLength(passwordNew, { min: 6, max: 20 })) {
-                            await User.findOne({ username: usernameNew },
-                                (err, foundUser) => {
-                                    if (!err) {
-                                        if (!foundUser) {
-                                            User.register({
-                                                username: usernameNew,
-                                                email: emailNew,
-                                                gender: genderNew,
-                                                dob: dobNew
-                                            }, req.body.password, (err, user) => {
-                                                if (err) {
-                                                    res.redirect("/register");
-                                                } else {
-                                                    passport.authenticate("local")(req, res, () => {
-                                                        res.redirect("/comment");
-                                                    });
-                                                }
-                                            });
-                                        } else {
-                                            res.send("username or email are already in use.");
-                                        }
-                                    }
-                                });
+                            User.register({
+                                username: usernameNew,
+                                password: passwordNew,
+                                email: emailNew,
+                                gender: genderNew,
+                                dob: dobNew
+                            }, passwordNew, (err, user) => {
+                                if (err) {
+                                    console.log(err);
+                                    res.redirect("/register");
+                                } else {
+                                    passport.authenticate("local")(req, res, () => {
+                                        res.redirect("/comment");
+                                    });
+                                }
+                            });
                         } else { console.log('1'); }
                     } else { console.log('2'); }
                 } else { console.log('3'); }
@@ -241,28 +255,30 @@ app.route("/submit")
             res.redirect("/login");
         }
     })
-    .post(async(req, res) => {
+    .post((req, res) => {
         let newComment = req.body.comment;
 
         User.findById(req.user.id, (err, foundUser) => {
             if (!err) {
                 if (foundUser) {
-                    if (validator.isEmpty(newComment, { max: 500 })) {
+                    if (validator.isEmpty(newComment)) {
                         res.send("Empty Post!!!");
                     } else {
-                        const newPost = new Post({
-                            comment: newComment
-                        });
-                        newPost.save().then(() =>
-                            res.redirect("comment"));
+                        if (validator.isLength(newComment, { max: 500 })) {
+                            const newPost = new Post({
+                                comment: newComment
+                            });
+                            newPost.save().then(() =>
+                                res.redirect("comment"));
+                        }
                     }
                 }
             }
         });
     })
-    .delete(async(req, res) => {
+    .delete((req, res) => {
         let id = req.params;
-        await Post.deleteOne({ _id: id }, (err) => {
+        Post.deleteOne({ _id: id }, (err) => {
             if (!err) {
                 res.redirect("/comment");
             }
@@ -271,27 +287,24 @@ app.route("/submit")
 
 
 /// like and dislike control
-app.get("comment/like/:id", async(req, res) => {
+app.post("comment/like/:id", (req, res) => {
     let id = req.params;
-    await Post.findById(id, (req, res) => {
+    Post.findById(id, (req, res) => {
         res.like = res.like + 1;
         res.save();
         res.redirect("/comment");
     });
 });
 
-app.get("comment/dislike/:id", async(req, res) => {
+app.post("comment/dislike/:id", (req, res) => {
     let id = req.params;
-    await Post.findById(id, (req, res) => {
+    Post.findById(id, (req, res) => {
         res.dislike = res.dislike + 1;
         res.save();
         res.redirect("/home");
     });
 });
 
-app.get('/comment', (req, res) => {
-    res.render('comment');
-});
 
 app.listen(config.port, function() {
     console.log(`Server started perfectly on ${config.port}...`);

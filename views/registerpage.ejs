@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-md-6">
                 <h3 class="dark-grey">Registration</h3>
-                <form action="" method="post">
+                <form action="/register" method="post">
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="inputUsername">Username</label>
@@ -19,14 +19,14 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-6 pass_show">
                             <label for="inputPassword4">Password</label>
-                            <input type="password" class="form-control" id="inputPassword4" aria-describedby="passwordHelpBlock" placeholder="Password">
+                            <input type="password" class="form-control" id="inputPassword" aria-describedby="passwordHelpBlock" placeholder="Password">
                             <small id="passwordHelpBlock" class="form-text text-muted">
                             Your password must be 8-20 characters long.
                             </small>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-6 pass_show">
                             <label for="inputPassword4">Password Confirmation</label>
                             <input type="password" class="form-control" id="inputPassword4" name="password" placeholder="Password">
 
@@ -38,9 +38,9 @@
                             <div class="input-group mb-3">
                                 <select class="custom-select" id="inputGroupSelect01" name="gender">
                                         <option selected>Choose...</option>
-                                        <option value="1">Male</option>
-                                        <option value="2">Female</option>
-                                        <option value="3">Other</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
                                     </select>
                             </div>
                         </div>
