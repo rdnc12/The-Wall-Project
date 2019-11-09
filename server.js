@@ -158,33 +158,18 @@ app.route("/login")
         } else {
             req.login(user, (err) => {
                 if (!err) {
-                    passport.authenticate("local", { failureRedirect: '/login' })(req, res, () => {
+                    passport.authenticate("local")(req, res, () => {
                         res.redirect('/comment');
                         //res.render("comment", { usernameLogin: req.body.username });
                     });
                 } else {
-                    res.status(401).send("401 Unauthorized");
+                    res.send("<h1> 401 Unauthorized</h1><hr><p>You are redirect to Home in 3 seconds</p>");
+                    // .then(setTimeout(res.redirect('/home'), 3000));
                 }
             });
         }
     });
 
-app.get('/comment', (req, res) => {
-    User.find({ "username": { $ne: null } }, (err, foundUser) => {
-        if (!err) {
-            if (foundUser) {
-                console.log(typeof foundUser.comment);
-
-                if (foundUser.comment !== '' || foundUser.comment !== null || typeof foundUser.comment !== undefined) {
-                    res.render('comment', { usersWithComments: foundUser });
-                }
-            }
-        } else {
-            console.log(err);
-            // res.status(400).send();
-        }
-    });
-});
 /// GOOGLE LOGIN SIDE ///
 app.get("/auth/google",
     passport.authenticate("google", { scope: ["profile"] })
@@ -247,34 +232,41 @@ app.route("/register")
     });
 
 // for getting sending and deleting comment
-app.route("/submit")
+app.route("/comment")
     .get((req, res) => {
         if (req.isAuthenticated()) {
-            res.render("comment");
+            User.find({ "username": { $ne: null } }, (err, foundUser) => {
+                if (!err) {
+                    if (foundUser) {
+                        res.render('comment', { usersWithComments: foundUser, username: req.user.username });
+                    }
+                } else {
+                    console.log(err);
+                    // res.status(400).send();
+                }
+            }).populate('comment', ['comment']);
         } else {
             res.redirect("/login");
         }
     })
     .post((req, res) => {
         let newComment = req.body.comment;
-
-        User.findById(req.user.id, (err, foundUser) => {
+        User.findOne(req.user.username, (err, foundUser) => {
             if (!err) {
                 if (foundUser) {
-                    if (validator.isEmpty(newComment)) {
+                    if (newComment == '') {
                         res.send("Empty Post!!!");
                     } else {
-                        if (validator.isLength(newComment, { max: 500 })) {
-                            const newPost = new Post({
-                                comment: newComment
-                            });
-                            newPost.save().then(() =>
-                                res.redirect("comment"));
-                        }
+                        const newPost = new Post({
+                            comment: newComment
+                        });
+                        newPost.save().then(() =>
+                            res.redirect("comment")
+                        );
                     }
                 }
             }
-        });
+        }).populate('comment', ['comment']);
     })
     .delete((req, res) => {
         let id = req.params;
