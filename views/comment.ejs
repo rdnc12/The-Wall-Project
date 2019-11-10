@@ -4,6 +4,7 @@
         <a href="#" class="navbar-brand" name='userName'>
             <%=username%>
         </a>
+        <a href="/logout">logout</a>
         <form class="form-inline">
             <div class="input-group">
                 <input type="text" class="form-control" aria-label="Recipient's username" aria-describedby="button-addon2" />
@@ -43,47 +44,46 @@
                 <!-- Post Place /////-->
 
                 <!--- \\\\\\\Post-->
-                <% usersWithComments.forEach((user)=>{ %>
-                    <% if(user.comment==[]) { %>
-                        <div class="card gedf-card">
-                            <div class="card-header">
+                <% users.forEach((user)=>{ %>
+                    <div class="card gedf-card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="mr-2">
-                                            <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="" />
-                                        </div>
-
-                                        <div class="ml-2">
-                                            <div class="h5 m-0">
-                                                <%=user.username%>
-                                            </div>
-                                            <div class="h7 text-muted">
-                                                <%=user.email%>
-                                            </div>
-                                        </div>
-
+                                    <div class="mr-2">
+                                        <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="" />
                                     </div>
-                                    <div>
+
+                                    <div class="ml-2">
+                                        <div class="h5 m-0">
+                                            <%=user._username[{}]%>
+                                        </div>
+                                        <div class="h7 text-muted">
+                                            email
+                                        </div>
                                     </div>
+
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="text-muted h7 mb-2">
-                                    <i class="far fa-clock"></i>10 min ago
+                                <div>
                                 </div>
-                                <p class="card-text">
-                                    <%=user.comment%>
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#" class="card-link"><i class="far fa-thumbs-up"></i> Like</a>
-                                <a href="#" class="card-link"><i class="far fa-thumbs-down"></i> Dislike</a>
-                                <a href="#" class="card-link"><i class="fa fa-comment"></i> Comment</a>
-                                <a href="#" class="card-link"><i class="fas fa-share"></i> Share</a>
                             </div>
                         </div>
-                        <% }}) %>
-                            <!-- Post /////-->
+                        <div class="card-body">
+                            <div class="text-muted h7 mb-2">
+                                <i class="far fa-clock"></i>10 min ago
+                            </div>
+                            <p class="card-text">
+                                <%=user.comment%>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="card-link"><i class="far fa-thumbs-up"></i> Like</a>
+                            <a href="#" class="card-link"><i class="far fa-thumbs-down"></i> Dislike</a>
+                            <a href="#" class="card-link"><i class="fa fa-comment"></i> Comment</a>
+                            <a href="#" class="card-link"><i class="fas fa-share"></i> Share</a>
+                        </div>
+                    </div>
+                    <% }) %>
+                        <!-- Post /////-->
             </div>
             <div class="col-md-3"></div>
         </div>

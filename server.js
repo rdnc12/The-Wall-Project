@@ -16,6 +16,8 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const config = require('./config');
 
+
+
 // config start
 const app = express();
 
@@ -44,28 +46,6 @@ mongoose.set("useCreateIndex", true);
 
 // mongoose schema config
 
-const postSchema = new mongoose.Schema({
-    comment: {
-        type: String,
-        max: 500,
-        default: 0
-    },
-    time: {
-        type: Date,
-        default: Date.now
-    },
-    like: {
-        type: Number,
-        default: 0
-    },
-    dislike: {
-        type: Number,
-        default: 0
-    }
-});
-
-const Post = new mongoose.model("Post", postSchema);
-
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -89,17 +69,39 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["Male", "Female", "Other"]
     },
-    dob: { type: Date },
-    comment: [{
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'Post'
-    }]
+    dob: { type: Date }
 });
 
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
+
+const postSchema = new mongoose.Schema({
+    comment: {
+        type: String,
+        max: 500,
+        default: ''
+    },
+    created: {
+        type: Date,
+        default: Date.now()
+    },
+    like: {
+        type: Number,
+        default: 0
+    },
+    dislike: {
+        type: Number,
+        default: 0
+    },
+    _username: [{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'User'
+    }]
+});
+
+const Post = new mongoose.model("Post", postSchema);
 
 passport.use(User.createStrategy());
 passport.serializeUser(function(user, done) {
@@ -196,7 +198,7 @@ app.route("/register")
     .get((req, res) => {
         res.render("registerpage");
     })
-    .post((req, res) => {
+    .post(async(req, res) => {
         let usernameNew = req.body.username;
         let passwordNew = req.body.password;
         let genderNew = req.body.gender;
@@ -208,7 +210,7 @@ app.route("/register")
                 if (!validator.isEmpty(passwordNew)) {
                     if (validator.isLength(usernameNew, { min: 3, max: 20 })) {
                         if (validator.isLength(passwordNew, { min: 6, max: 20 })) {
-                            User.register({
+                            await User.register({
                                 username: usernameNew,
                                 password: passwordNew,
                                 email: emailNew,
@@ -220,7 +222,7 @@ app.route("/register")
                                     res.redirect("/register");
                                 } else {
                                     passport.authenticate("local")(req, res, () => {
-                                        res.redirect("/comment");
+                                        res.redirect("/login");
                                     });
                                 }
                             });
@@ -233,44 +235,37 @@ app.route("/register")
 
 // for getting sending and deleting comment
 app.route("/comment")
-    .get((req, res) => {
+    .get(async(req, res) => {
         if (req.isAuthenticated()) {
-            User.find({ "username": { $ne: null } }, (err, foundUser) => {
-                if (!err) {
-                    if (foundUser) {
-                        res.render('comment', { usersWithComments: foundUser, username: req.user.username });
-                    }
-                } else {
-                    console.log(err);
-                    // res.status(400).send();
-                }
-            }).populate('comment', ['comment']);
+            //const commentsAll = await Post.find({ _username: req.user.id });
+            const commentsAll = await Post.find({ _username: { $ne: null } })
+                .populate('_username', ['username']);
+
+            console.log("IDDDDD= " + req.user.id);
+            console.log(commentsAll);
+            res.render('comment', { users: commentsAll, username: req.user.username });
         } else {
             res.redirect("/login");
         }
     })
-    .post((req, res) => {
+    .post(async(req, res) => {
         let newComment = req.body.comment;
-        User.findOne(req.user.username, (err, foundUser) => {
-            if (!err) {
-                if (foundUser) {
-                    if (newComment == '') {
-                        res.send("Empty Post!!!");
-                    } else {
-                        const newPost = new Post({
-                            comment: newComment
-                        });
-                        newPost.save().then(() =>
-                            res.redirect("comment")
-                        );
-                    }
-                }
-            }
-        }).populate('comment', ['comment']);
+
+        const newPost = new Post({
+            comment: newComment.toString(),
+            _username: req.user.id
+        });
+        try {
+            await newPost.save();
+            // res.send(newPost);
+            res.redirect("comment");
+        } catch (err) {
+            res.status(400).send(err);
+        }
     })
-    .delete((req, res) => {
+    .delete(async(req, res) => {
         let id = req.params;
-        Post.deleteOne({ _id: id }, (err) => {
+        await Post.deleteOne({ _id: id }, (err) => {
             if (!err) {
                 res.redirect("/comment");
             }
@@ -279,22 +274,27 @@ app.route("/comment")
 
 
 /// like and dislike control
-app.post("comment/like/:id", (req, res) => {
+app.post("comment/like/:id", async(req, res) => {
     let id = req.params;
-    Post.findById(id, (req, res) => {
+    await Post.findById(id, (req, res) => {
         res.like = res.like + 1;
         res.save();
         res.redirect("/comment");
     });
 });
 
-app.post("comment/dislike/:id", (req, res) => {
+app.post("comment/dislike/:id", async(req, res) => {
     let id = req.params;
-    Post.findById(id, (req, res) => {
+    await Post.findById(id, (req, res) => {
         res.dislike = res.dislike + 1;
         res.save();
-        res.redirect("/home");
+        res.redirect("/comment");
     });
+});
+
+app.get("/logout", (req, res) => {
+    req.logout();
+    res.redirect("/");
 });
 
 
