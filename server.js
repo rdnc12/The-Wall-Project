@@ -3,11 +3,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const path = require('path');
+const fs = require('fs');
+const _ = require('lodash');
+const moment = require('moment');
 const validator = require("validator");
 const mongoose = require("mongoose");
 const findOrCreate = require('mongoose-findorcreate');
-const fs = require('fs');
-const _ = require('lodash');
 const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
@@ -85,7 +86,7 @@ const postSchema = new mongoose.Schema({
     },
     created: {
         type: Date,
-        default: Date.now()
+        default: new moment()
     },
     like: {
         type: Number,
@@ -95,12 +96,14 @@ const postSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    _username: [{
+    _username: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'User'
-    }]
+    }
 });
-
+let a = new moment();
+console.log(a);
+console.log(a.second());
 const Post = new mongoose.model("Post", postSchema);
 
 passport.use(User.createStrategy());
@@ -240,10 +243,8 @@ app.route("/comment")
             //const commentsAll = await Post.find({ _username: req.user.id });
             const commentsAll = await Post.find({ _username: { $ne: null } })
                 .populate('_username', ['username']);
-
-            console.log("IDDDDD= " + req.user.id);
-            console.log(commentsAll);
-            res.render('comment', { users: commentsAll, username: req.user.username });
+            //console.log(commentsAll);
+            res.render('comment', { users: commentsAll, username: req.user.username, moment });
         } else {
             res.redirect("/login");
         }
@@ -252,7 +253,7 @@ app.route("/comment")
         let newComment = req.body.comment;
 
         const newPost = new Post({
-            comment: newComment.toString(),
+            comment: _.capitalize(newComment.toString()),
             _username: req.user.id
         });
         try {
@@ -274,21 +275,23 @@ app.route("/comment")
 
 
 /// like and dislike control
-app.post("comment/like/:id", async(req, res) => {
-    let id = req.params;
-    await Post.findById(id, (req, res) => {
-        res.like = res.like + 1;
-        res.save();
-        res.redirect("/comment");
+app.get("/comment/like/:id", async(req, res) => {
+    let { id } = req.params;
+    await Post.findById(id).then(post => {
+        post.like = post.like + 1;
+        post.save().then(like => {
+            res.redirect("/comment");
+        });
     });
 });
 
-app.post("comment/dislike/:id", async(req, res) => {
-    let id = req.params;
-    await Post.findById(id, (req, res) => {
-        res.dislike = res.dislike + 1;
-        res.save();
-        res.redirect("/comment");
+app.get("comment/dislike/:id", async(req, res) => {
+    let { id } = req.params;
+    await Post.findById(id).then(post => {
+        post.dislike = post.dislike - 1;
+        post.save().then(like => {
+            res.redirect("/comment");
+        });
     });
 });
 
