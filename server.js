@@ -252,7 +252,8 @@ app.route("/comment")
         if (req.isAuthenticated()) {
             //const commentsAll = await Post.find({ _username: req.user.id });
             const commentsAll = await Post.find({ _username: { $ne: null } })
-                .populate('_username', ['username']);
+                .populate('_username', ['username'])
+                .sort({ 'created': 'desc' });
             //console.log(commentsAll);
             res.render('comment', { users: commentsAll, username: req.user.username, moment });
         } else {
