@@ -1,10 +1,15 @@
 <%- include partials/header.ejs -%>
 
-    <nav class="navbar navbar-light bg-white">
-        <a href="#" class="navbar-brand" name='userName'>
-            <%=username%>
-        </a>
-        <a href="/logout">logout</a>
+    <nav class="navbar navbar-light bg-white fixed-top shadow-sm ">
+        <div class="text-left">
+            <a href="#" class="navbar-brand" name='userName'>
+                <i class="fas fa-home"></i>
+            </a>
+            <a>
+                <%=username%>
+            </a>
+            <a href="/logout">logout</a>
+        </div>
         <form class="form-inline">
             <div class="input-group">
                 <input type="text" class="form-control" aria-label="Recipient's username" aria-describedby="button-addon2" />
@@ -17,26 +22,23 @@
         </form>
     </nav>
 
-    <div class="container-fluid gedf-wrapper">
-        <div class="row">
+    <div class="container-fluid gedf-wrapper mt-5 ">
+        <div class="row ">
             <div class="col-md-3"></div>
             <div class="col-md-6 gedf-main">
                 <!--- \\\\\\\Post Place-->
-                <div class="card gedf-card">
-                    <div class="card-body">
+                <div class="card gedf-card mb-3 mt-4 shadow-sm">
+                    <div class="p-4">
                         <form action="/comment" method="post">
-                            <div class="tab-content" id="myTabContent">
-                                <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
-                                    <div class="form-group">
-                                        <label class="sr-only" for="message">post</label>
-                                        <textarea class="form-control" name="comment" id="message" rows="3" placeholder="What are you thinking?"></textarea>
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="message">post</label>
+                                <textarea class="form-control" name="comment" id="message" rows="3" placeholder="What are you thinking?"></textarea>
                             </div>
                             <div class="btn-toolbar justify-content-between">
                                 <div class="btn-group">
                                     <button type="submit" class="btn btn-primary">share</button>
                                 </div>
+                                <small class=" float-right pull-right" id="counter">500 characters remaining</small>
                             </div>
                         </form>
                     </div>
@@ -45,45 +47,43 @@
 
                 <!--- \\\\\\\Post-->
                 <% users.forEach((user)=>{ %>
-                    <div class="card gedf-card">
+                    <div class="card gedf-card shadow-sm">
                         <div class="card-header">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex text-left">
                                 <div class="mr-2">
-                                    <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="" />
+                                    <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" />
                                 </div>
-                                <div class="ml-2">
+                                <div class="ml-2 float-left">
                                     <div class="h5 m-0">
                                         <%=user._username.username%>
                                     </div>
-                                    <div class="h7 text-muted">
-                                        email
+                                    <div class="text-muted h7 mb-2">
+                                        <i class="far fa-clock"></i>
+                                        <%let postTime= new moment().diff(user.created); if(postTime>60000 && postTime<3600000){ %>
+                                            <%= (postTime/60000).toFixed(0); %> minute ago
+                                                <%}else{ if (postTime>=3600000 && postTime<86400000){%>
+                                                    <%= (postTime/3600000).toFixed(0); %> hour ago
+                                                        <%}else{ if(postTime>=86400000){ %>
+                                                            <%= (postTime/86400000).toFixed(0); %> day ago
+                                                                <%}else{ %>
+                                                                    a while ago
+                                                                    <% }}}%>
+                                    </div>
+                                    <div class="small">
+                                        <p class="card-text more">
+                                            <%=user.comment%>
+                                        </p>
+                                    </div>
+                                    <div class="">
+                                        <a href="/comment/like/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-up"></i> <%=user.like%></a>
+                                        <a href="/comment/dislike/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-down"></i> <%=user.dislike%></a>
+                                        <a href="#" class="card-link textsize"><i class="fa fa-comment"></i> Comment</a>
+                                        <a href="#" class="card-link textsize"><i class="fas fa-share"></i> Share</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="text-muted h7 mb-2">
-                                <i class="far fa-clock"></i>
-                                <%let postTime=moment().diff(user.created); if(postTime>60000){ %>
-                                    <%= (postTime/60000).toFixed(0); %> minute ago
-                                        <%} if (postTime>3600000){%>
-                                            <%= (postTime/3600000).toFixed(0); %> hour ago
-                                                <%} if(postTime>86400000){ %>
-                                                    <%= (postTime/86400000).toFixed(0); %> day ago
-                                                        <%}%>
-                            </div>
-                            <div class="small">
-                                <p class="card-text">
-                                    <%=user.comment%>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="/comment/like/<%= user._id%>" class="card-link"><i class="far fa-thumbs-up"></i> Like</a>
-                            <a href="/comment/dislike/<%= user._id%>" class="card-link"><i class="far fa-thumbs-down"></i> Dislike</a>
-                            <a href="#" class="card-link"><i class="fa fa-comment"></i> Comment</a>
-                            <a href="#" class="card-link"><i class="fas fa-share"></i> Share</a>
-                        </div>
+
                     </div>
                     <% }) %>
                         <!-- Post /////-->

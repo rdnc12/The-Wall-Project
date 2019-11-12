@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const moment = require('moment');
 
 const postSchema = new mongoose.Schema({
     comment: {
@@ -9,7 +9,7 @@ const postSchema = new mongoose.Schema({
     },
     time: {
         type: Date,
-        default: Date.now
+        default: new moment()
     },
     like: {
         type: Number,

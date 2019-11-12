@@ -37,7 +37,7 @@ app.use(passport.session());
 
 
 // mongoose config
-console.log(Date.now());
+
 mongoose.connect(config.connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -101,9 +101,7 @@ const postSchema = new mongoose.Schema({
         ref: 'User'
     }
 });
-let a = new moment();
-console.log(a);
-console.log(a.second());
+
 const Post = new mongoose.model("Post", postSchema);
 
 passport.use(User.createStrategy());
@@ -119,18 +117,30 @@ passport.deserializeUser(function(id, done) {
 
 
 /// GOOGLE LOGIN ///
-passport.use(new GoogleStrategy({
-        clientID: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/auth/google/secrets",
-        userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-    },
-    function(accessToken, refreshToken, profile, cb) {
-        User.findOrCreate({ googleId: profile.id }, function(err, user) {
-            return cb(err, user);
-        });
-    }
-));
+passport.use(
+    new GoogleStrategy({
+            clientID: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
+            callbackURL: '/auth/google/callback',
+            proxy: true
+        },
+        async(accessToken, refreshToken, profile, done) => {
+            try {
+                const existingUser = await User.findOne({ googleId: profile.id });
+                if (existingUser) {
+                    return done(null, existingUser);
+                }
+                const user = await new User({
+                    googleId: profile.id,
+                    displayName: profile.displayName
+                }).save();
+                done(null, user);
+            } catch (err) {
+                done(err, null);
+            }
+        }
+    )
+);
 
 /// FACEBOOK LOGIN ///
 passport.use(new FacebookStrategy({
@@ -177,7 +187,7 @@ app.route("/login")
 
 /// GOOGLE LOGIN SIDE ///
 app.get("/auth/google",
-    passport.authenticate("google", { scope: ["profile"] })
+    passport.authenticate("google", { scope: ['profile', 'email'] })
 );
 
 app.get('/auth/google/secrets',
@@ -254,7 +264,8 @@ app.route("/comment")
 
         const newPost = new Post({
             comment: _.capitalize(newComment.toString()),
-            _username: req.user.id
+            _username: req.user.id,
+            created: new moment()
         });
         try {
             await newPost.save();
@@ -285,11 +296,11 @@ app.get("/comment/like/:id", async(req, res) => {
     });
 });
 
-app.get("comment/dislike/:id", async(req, res) => {
+app.get("/comment/dislike/:id", async(req, res) => {
     let { id } = req.params;
     await Post.findById(id).then(post => {
-        post.dislike = post.dislike - 1;
-        post.save().then(like => {
+        post.dislike = post.dislike + 1;
+        post.save().then(dislike => {
             res.redirect("/comment");
         });
     });
