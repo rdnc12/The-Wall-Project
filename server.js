@@ -190,22 +190,12 @@ app.get("/auth/google",
     passport.authenticate("google", { scope: ['profile', 'email'] })
 );
 
-app.get('/auth/google/secrets',
+app.get('/auth/google/comment',
     passport.authenticate('google', { failureRedirect: "/login" }),
     function(req, res) {
         res.redirect('/secrets');
     });
 
-/// FACEBOOK LOGIN SIDE ///
-app.get("/auth/facebook",
-    passport.authenticate("facebook")
-);
-
-app.get('/auth/facebook/secrets',
-    passport.authenticate('facebook', { failureRedirect: "/login" }),
-    function(req, res) {
-        res.redirect('/secrets');
-    });
 /// register page
 app.route("/register")
     .get((req, res) => {
@@ -254,8 +244,7 @@ app.route("/comment")
             const commentsAll = await Post.find({ _username: { $ne: null } })
                 .populate('_username', ['username'])
                 .sort({ 'created': 'desc' });
-            //console.log(commentsAll);
-            res.render('comment', { users: commentsAll, username: req.user.username, moment });
+            res.render('comment', { users: commentsAll, loginInf: req.user, moment });
         } else {
             res.redirect("/login");
         }
@@ -275,18 +264,10 @@ app.route("/comment")
         } catch (err) {
             res.status(400).send(err);
         }
-    })
-    .delete(async(req, res) => {
-        let id = req.params;
-        await Post.deleteOne({ _id: id }, (err) => {
-            if (!err) {
-                res.redirect("/comment");
-            }
-        });
     });
 
 
-/// like and dislike control
+/// like, dislike and delete control
 app.get("/comment/like/:id", async(req, res) => {
     let { id } = req.params;
     await Post.findById(id).then(post => {
@@ -305,6 +286,18 @@ app.get("/comment/dislike/:id", async(req, res) => {
             res.redirect("/comment");
         });
     });
+});
+app.get("/comment/delete/:id", async(req, res) => {
+    let { id } = req.params;
+
+    await Post.findByIdAndRemove(id, (err) => {
+        if (!err) {
+            res.redirect("/comment");
+        } else {
+            console.log(err);
+        }
+    });
+
 });
 
 app.get("/logout", (req, res) => {

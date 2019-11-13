@@ -6,7 +6,7 @@
                 <i class="fas fa-home"></i>
             </a>
             <a>
-                <%=username%>
+                <%=loginInf.username%>
             </a>
             <a href="/logout">logout</a>
         </div>
@@ -74,11 +74,14 @@
                                             <%=user.comment%>
                                         </p>
                                     </div>
-                                    <div class="">
-                                        <a href="/comment/like/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-up"></i> <%=user.like%></a>
+                                    <div>
+                                        <a href="/comment/like/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-up"></i><%=user.like%></a>
                                         <a href="/comment/dislike/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-down"></i> <%=user.dislike%></a>
-                                        <a href="#" class="card-link textsize"><i class="fa fa-comment"></i> Comment</a>
-                                        <a href="#" class="card-link textsize"><i class="fas fa-share"></i> Share</a>
+                                        <a href="#" class="card-link textsize"><i class="fa fa-comment"></i></a>
+                                        <a href="#" class="card-link textsize"><i class="fas fa-share"></i></a>
+                                        <% if (user._username._id == loginInf.id){ %>
+                                            <a href="/comment/delete/<%= user._id%>" class="card-link textsize"><i class="fas fa-trash-alt"></i></a>
+                                            <%}%>
                                     </div>
                                 </div>
                             </div>
@@ -88,7 +91,6 @@
                     <% }) %>
                         <!-- Post /////-->
             </div>
-            <div class="col-md-3"></div>
         </div>
     </div>
     <%- include partials/footer.ejs -%>
