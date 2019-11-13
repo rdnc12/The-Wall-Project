@@ -16,6 +16,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const config = require('./config');
+const cleancache = require('./middlewares/cleanCache');
 
 
 
@@ -57,7 +58,6 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
         min: 6,
         max: 20
     },
@@ -173,7 +173,7 @@ app.route("/login")
         } else {
             req.login(user, (err) => {
                 if (!err) {
-                    passport.authenticate("local")(req, res, () => {
+                    passport.authenticate("local", { failureRedirect: '/login' })(req, res, () => {
                         res.redirect('/comment');
                         //res.render("comment", { usernameLogin: req.body.username });
                     });
@@ -215,7 +215,6 @@ app.route("/register")
                         if (validator.isLength(passwordNew, { min: 6, max: 20 })) {
                             await User.register({
                                 username: usernameNew,
-                                password: passwordNew,
                                 email: emailNew,
                                 gender: genderNew,
                                 dob: dobNew
@@ -237,34 +236,36 @@ app.route("/register")
     });
 
 // for getting sending and deleting comment
-app.route("/comment")
-    .get(async(req, res) => {
-        if (req.isAuthenticated()) {
-            //const commentsAll = await Post.find({ _username: req.user.id });
-            const commentsAll = await Post.find({ _username: { $ne: null } })
-                .populate('_username', ['username'])
-                .sort({ 'created': 'desc' });
-            res.render('comment', { users: commentsAll, loginInf: req.user, moment });
-        } else {
-            res.redirect("/login");
-        }
-    })
-    .post(async(req, res) => {
-        let newComment = req.body.comment;
 
-        const newPost = new Post({
-            comment: _.capitalize(newComment.toString()),
-            _username: req.user.id,
-            created: new moment()
-        });
-        try {
-            await newPost.save();
-            // res.send(newPost);
-            res.redirect("comment");
-        } catch (err) {
-            res.status(400).send(err);
-        }
+app.get("/comment", async(req, res) => {
+    if (req.isAuthenticated()) {
+        //const commentsAll = await Post.find({ _username: req.user.id });
+        const commentsAll = await Post.find({ _username: { $ne: null } })
+            .populate('_username', ['username'])
+            .sort({ 'created': 'desc' })
+            .cache({ key: req.user });
+
+        res.render('comment', { users: commentsAll, loginInf: req.user, moment });
+    } else {
+        res.redirect("/login");
+    }
+});
+app.post("/comment", async(req, res) => {
+    let newComment = req.body.comment;
+
+    const newPost = new Post({
+        comment: _.capitalize(newComment.toString()),
+        _username: req.user.id,
+        created: new moment()
     });
+    try {
+        await newPost.save();
+        // res.send(newPost);
+        res.redirect("comment");
+    } catch (err) {
+        res.status(400).send(err);
+    }
+});
 
 
 /// like, dislike and delete control
@@ -300,7 +301,7 @@ app.get("/comment/delete/:id", async(req, res) => {
 
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", cleancache, (req, res) => {
     req.logout();
     res.redirect("/");
 });

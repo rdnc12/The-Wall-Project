@@ -1,16 +1,32 @@
 <%- include partials/header.ejs -%>
 
     <nav class="navbar navbar-light bg-white fixed-top shadow-sm ">
-        <div class="text-left">
-            <a href="#" class="navbar-brand" name='userName'>
-                <i class="fas fa-home"></i>
-            </a>
-            <a>
-                <%=loginInf.username%>
-            </a>
-            <a href="/logout">logout</a>
+        <div>
+            <table class="table table-borderless">
+                <tbody>
+                    <tr>
+                        <td class="p-0">
+                            <a href="#" class="navbar-brand" name='userName'>
+                                <i class="fas fa-home"></i>
+                            </a>
+                        </td>
+                        <td class="p-0">
+                            <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" />
+                        </td>
+                        <td class="p-0 pl-2">
+                            <p class="mb-0">
+                                <%=loginInf.username%>
+                            </p>
+                            <a href="/logout" style="font-size: small;"><i class="fas fa-sign-out-alt "></i>logout</a>
+
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
         </div>
-        <form class="form-inline">
+        <form class="form-inline" onsubmit="return false">
             <div class="input-group">
                 <input type="text" class="form-control" aria-label="Recipient's username" aria-describedby="button-addon2" />
                 <div class="input-group-append">
