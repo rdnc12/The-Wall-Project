@@ -16,7 +16,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const TwitterStrategy = require('passport-twitter').Strategy;
 const config = require('./config');
-const cleancache = require('./middlewares/cleanCache');
+//const cleancache = require('./middlewares/cleanCache');
 
 
 
@@ -41,7 +41,8 @@ app.use(passport.session());
 
 mongoose.connect(config.connectionString, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
 });
 mongoose.set("useCreateIndex", true);
 
@@ -79,7 +80,7 @@ userSchema.plugin(findOrCreate);
 const User = new mongoose.model("User", userSchema);
 
 const postSchema = new mongoose.Schema({
-    comment: {
+    post: {
         type: String,
         max: 500,
         default: ''
@@ -103,6 +104,29 @@ const postSchema = new mongoose.Schema({
 });
 
 const Post = new mongoose.model("Post", postSchema);
+
+const commentSchema = new mongoose.Schema({
+    comment: {
+        type: String,
+        max: 500
+    },
+    createdTime: {
+        type: Date,
+        default: new moment()
+    },
+    likeCount: {
+        type: Number,
+        default: 0
+    },
+    dislikeCount: {
+        type: Number,
+        default: 0
+    },
+    usernamePost: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'User'
+    }
+});
 
 passport.use(User.createStrategy());
 passport.serializeUser(function(user, done) {
@@ -174,8 +198,8 @@ app.route("/login")
             req.login(user, (err) => {
                 if (!err) {
                     passport.authenticate("local", { failureRedirect: '/login' })(req, res, () => {
-                        res.redirect('/comment');
-                        //res.render("comment", { usernameLogin: req.body.username });
+                        res.redirect('/post');
+                        //res.render("post", { usernameLogin: req.body.username });
                     });
                 } else {
                     res.send("<h1> 401 Unauthorized</h1><hr><p>You are redirect to Home in 3 seconds</p>");
@@ -190,7 +214,7 @@ app.get("/auth/google",
     passport.authenticate("google", { scope: ['profile', 'email'] })
 );
 
-app.get('/auth/google/comment',
+app.get('/auth/google/post',
     passport.authenticate('google', { failureRedirect: "/login" }),
     function(req, res) {
         res.redirect('/secrets');
@@ -235,33 +259,32 @@ app.route("/register")
         } else { console.log('5'); }
     });
 
-// for getting sending and deleting comment
+// for getting sending and deleting post
 
-app.get("/comment", async(req, res) => {
+app.get("/post", async(req, res) => {
     if (req.isAuthenticated()) {
-        //const commentsAll = await Post.find({ _username: req.user.id });
-        const commentsAll = await Post.find({ _username: { $ne: null } })
+        //const postsAll = await Post.find({ _username: req.user.id });
+        const postsAll = await Post.find({ _username: { $ne: null } })
             .populate('_username', ['username'])
-            .sort({ 'created': 'desc' })
-            .cache({ key: req.user });
+            .sort({ 'created': 'desc' });
 
-        res.render('comment', { users: commentsAll, loginInf: req.user, moment });
+        res.render('post', { users: postsAll, loginInf: req.user, moment });
     } else {
         res.redirect("/login");
     }
 });
-app.post("/comment", async(req, res) => {
-    let newComment = req.body.comment;
+app.post("/post", async(req, res) => {
+    let newpost = req.body.post;
 
     const newPost = new Post({
-        comment: _.capitalize(newComment.toString()),
+        post: newpost.toString(),
         _username: req.user.id,
         created: new moment()
     });
     try {
         await newPost.save();
         // res.send(newPost);
-        res.redirect("comment");
+        res.redirect("post");
     } catch (err) {
         res.status(400).send(err);
     }
@@ -269,31 +292,31 @@ app.post("/comment", async(req, res) => {
 
 
 /// like, dislike and delete control
-app.get("/comment/like/:id", async(req, res) => {
+app.get("/post/like/:id", async(req, res) => {
     let { id } = req.params;
     await Post.findById(id).then(post => {
         post.like = post.like + 1;
         post.save().then(like => {
-            res.redirect("/comment");
+            res.redirect("/post");
         });
     });
 });
 
-app.get("/comment/dislike/:id", async(req, res) => {
+app.get("/post/dislike/:id", async(req, res) => {
     let { id } = req.params;
     await Post.findById(id).then(post => {
         post.dislike = post.dislike + 1;
         post.save().then(dislike => {
-            res.redirect("/comment");
+            res.redirect("/post");
         });
     });
 });
-app.get("/comment/delete/:id", async(req, res) => {
+app.get("/post/delete/:id", async(req, res) => {
     let { id } = req.params;
 
     await Post.findByIdAndRemove(id, (err) => {
         if (!err) {
-            res.redirect("/comment");
+            res.redirect("/post");
         } else {
             console.log(err);
         }
@@ -301,7 +324,7 @@ app.get("/comment/delete/:id", async(req, res) => {
 
 });
 
-app.get("/logout", cleancache, (req, res) => {
+app.get("/logout", (req, res) => {
     req.logout();
     res.redirect("/");
 });
