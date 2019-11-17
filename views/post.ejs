@@ -58,7 +58,7 @@
                         <div class="card-header">
                             <div class="d-flex text-left">
                                 <div class="mr-2">
-                                    <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" />
+                                    <img class="rounded-circle" width="45" src="<%=user._username.picture%>" />
                                 </div>
                                 <div class="ml-2 float-left">
                                     <div class="h6 m-0">
@@ -77,17 +77,45 @@
                                                                     <% }}}%>
                                     </div>
                                     <div class="small">
-                                        <p class="card-text more">
+                                        <p class="text-justify card-text more" style="-webkit-hyphens: auto;-moz-hyphens: auto; hyphens: auto;">
                                             <%=user.post%>
                                         </p>
                                     </div>
                                     <div>
+
                                         <a href="/post/like/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-up"></i><%=user.like%></a>
                                         <a href="/post/dislike/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-down"></i> <%=user.dislike%></a>
-                                        <a href="#" class="card-link textsize"><i class="fa fa-comment"></i></a>
+                                        <a href="#" class="card-link textsize" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-comment"></i></a>
+
                                         <a href="#" class="card-link textsize"><i class="fas fa-share"></i></a>
                                         <% if (user._username._id == loginInf.id){ %>
                                             <a href="/post/delete/<%= user._id%>" class="card-link textsize"><i class="fas fa-trash-alt"></i></a>
+                                            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form>
+
+                                                                <div class="form-group">
+                                                                    <label for="message-text" class="col-form-label">Message:</label>
+                                                                    <textarea class="form-control" id="message-text"></textarea>
+                                                                    <small class=" float-right pull-right" id="counter">500 characters remaining</small>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                            <button type="button" class="btn btn-primary">Send message</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <%}%>
                                     </div>
                                 </div>

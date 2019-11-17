@@ -1,12 +1,12 @@
 require('dotenv').config();
 const express = require("express");
+const app = express();
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const path = require('path');
-const fs = require('fs');
-const _ = require('lodash');
 const moment = require('moment');
 const validator = require("validator");
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 const mongoose = require("mongoose");
 const findOrCreate = require('mongoose-findorcreate');
 const session = require("express-session");
@@ -14,14 +14,13 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const TwitterStrategy = require('passport-twitter').Strategy;
 const config = require('./config');
 //const cleancache = require('./middlewares/cleanCache');
 
 
 
 // config start
-const app = express();
+
 
 app.set("view engine", "ejs"); //for making ejs usable in views folder
 app.use(bodyParser.urlencoded({ extended: true })); // for post requests
@@ -56,6 +55,10 @@ const userSchema = new mongoose.Schema({
         unique: true,
         min: 3,
         max: 20
+    },
+    picture: {
+        type: String,
+        default: 'https://picsum.photos/50/50/?random'
     },
     password: {
         type: String,
@@ -97,6 +100,8 @@ const postSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    googleId: String,
+    facebookId: String,
     _username: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'User'
@@ -105,28 +110,6 @@ const postSchema = new mongoose.Schema({
 
 const Post = new mongoose.model("Post", postSchema);
 
-const commentSchema = new mongoose.Schema({
-    comment: {
-        type: String,
-        max: 500
-    },
-    createdTime: {
-        type: Date,
-        default: new moment()
-    },
-    likeCount: {
-        type: Number,
-        default: 0
-    },
-    dislikeCount: {
-        type: Number,
-        default: 0
-    },
-    usernamePost: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'User'
-    }
-});
 
 passport.use(User.createStrategy());
 passport.serializeUser(function(user, done) {
@@ -172,10 +155,21 @@ passport.use(new FacebookStrategy({
         clientSecret: process.env.APP_SECRET,
         callbackURL: "http://localhost:3000/auth/facebook/secrets"
     },
-    function(accessToken, refreshToken, profile, cb) {
-        User.findOrCreate({ facebookId: profile.id }, function(err, user) {
-            return cb(err, user);
-        });
+    async(accessToken, refreshToken, profile, cb) => {
+        try {
+            const existingUser = await User.findOne({ facebookId: profile.id });
+            if (existingUser) {
+                return cb(null, existingUser);
+            }
+            const user = await new User({
+                facebookId: profile.id,
+                displayName: profile.displayName
+            }).save();
+            cb(null, user);
+
+        } catch (err) {
+            cb(err, null);
+        }
     }
 ));
 app.get('/', (req, res) => {
@@ -265,7 +259,7 @@ app.get("/post", async(req, res) => {
     if (req.isAuthenticated()) {
         //const postsAll = await Post.find({ _username: req.user.id });
         const postsAll = await Post.find({ _username: { $ne: null } })
-            .populate('_username', ['username'])
+            .populate('_username', ['username', 'picture'])
             .sort({ 'created': 'desc' });
 
         res.render('post', { users: postsAll, loginInf: req.user, moment });
@@ -330,6 +324,7 @@ app.get("/logout", (req, res) => {
 });
 
 
-app.listen(config.port, function() {
+http.listen(config.port, function() {
     console.log(`Server started perfectly on ${config.port}...`);
+
 });
