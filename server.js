@@ -172,12 +172,9 @@ passport.use(new FacebookStrategy({
         }
     }
 ));
-app.get('/', (req, res) => {
-    res.render('home');
-});
 
 /// Login page
-app.route("/login")
+app.route("/")
     .get((req, res) => {
         res.render("loginpage");
     })
@@ -191,7 +188,7 @@ app.route("/login")
         } else {
             req.login(user, (err) => {
                 if (!err) {
-                    passport.authenticate("local", { failureRedirect: '/login' })(req, res, () => {
+                    passport.authenticate("local", { failureRedirect: '/' })(req, res, () => {
                         res.redirect('/post');
                         //res.render("post", { usernameLogin: req.body.username });
                     });
@@ -211,7 +208,7 @@ app.get("/auth/google",
 app.get('/auth/google/post',
     passport.authenticate('google', { failureRedirect: "/login" }),
     function(req, res) {
-        res.redirect('/secrets');
+        res.redirect('/post');
     });
 
 /// register page
@@ -242,7 +239,7 @@ app.route("/register")
                                     res.redirect("/register");
                                 } else {
                                     passport.authenticate("local")(req, res, () => {
-                                        res.redirect("/login");
+                                        res.redirect("/");
                                     });
                                 }
                             });
@@ -264,7 +261,7 @@ app.get("/post", async(req, res) => {
 
         res.render('post', { users: postsAll, loginInf: req.user, moment });
     } else {
-        res.redirect("/login");
+        res.redirect("/");
     }
 });
 app.post("/post", async(req, res) => {

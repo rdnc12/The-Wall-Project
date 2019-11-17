@@ -55,71 +55,78 @@
                 <!--- \\\\\\\Post-->
                 <% users.forEach((user)=>{ %>
                     <div class="card gedf-card shadow-sm">
+
                         <div class="card-header">
-                            <div class="d-flex text-left">
-                                <div class="mr-2">
-                                    <img class="rounded-circle" width="45" src="<%=user._username.picture%>" />
-                                </div>
-                                <div class="ml-2 float-left">
-                                    <div class="h6 m-0">
-                                        <%=user._username.username%>
-                                    </div>
-                                    <div class="text-muted h7 mb-2">
-                                        <i class="far fa-clock"></i>
-                                        <%let postTime= new moment().diff(user.created); if(postTime>60000 && postTime<3600000){ %>
-                                            <%= (postTime/60000).toFixed(0); %> minute ago
-                                                <%}else{ if (postTime>=3600000 && postTime<86400000){%>
-                                                    <%= (postTime/3600000).toFixed(0); %> hour ago
-                                                        <%}else{ if(postTime>=86400000){ %>
-                                                            <%= (postTime/86400000).toFixed(0); %> day ago
-                                                                <%}else{ %>
-                                                                    a while ago
-                                                                    <% }}}%>
-                                    </div>
-                                    <div class="small">
-                                        <p class="text-justify card-text more" style="-webkit-hyphens: auto;-moz-hyphens: auto; hyphens: auto;">
-                                            <%=user.post%>
-                                        </p>
-                                    </div>
-                                    <div>
+                            <% if (user._username._id !== loginInf.id){ %>
+                                <a href="#" class="card-link textsize float-right"><i class="fas fa-envelope"></i></a>
+                                <%}%>
+                                    <div class="d-flex text-left">
+                                        <div class="mr-2">
+                                            <img class="rounded-circle" width="45" src="<%=user._username.picture%>" />
+                                        </div>
 
-                                        <a href="/post/like/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-up"></i><%=user.like%></a>
-                                        <a href="/post/dislike/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-down"></i> <%=user.dislike%></a>
-                                        <a href="#" class="card-link textsize" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-comment"></i></a>
+                                        <div class="ml-2 float-left">
+                                            <div class="h6 m-0">
+                                                <%=user._username.username%>
+                                            </div>
 
-                                        <a href="#" class="card-link textsize"><i class="fas fa-share"></i></a>
-                                        <% if (user._username._id == loginInf.id){ %>
-                                            <a href="/post/delete/<%= user._id%>" class="card-link textsize"><i class="fas fa-trash-alt"></i></a>
-                                            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="exampleModalLabel">New message</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <div class="text-muted h7 mb-2">
+                                                <i class="far fa-clock"></i>
+                                                <%let postTime= new moment().diff(user.created); if(postTime>60000 && postTime<3600000){ %>
+                                                    <%= (postTime/60000).toFixed(0); %> minute ago
+                                                        <%}else{ if (postTime>=3600000 && postTime<86400000){%>
+                                                            <%= (postTime/3600000).toFixed(0); %> hour ago
+                                                                <%}else{ if(postTime>=86400000){ %>
+                                                                    <%= (postTime/86400000).toFixed(0); %> day ago
+                                                                        <%}else{ %>
+                                                                            a while ago
+                                                                            <% }}}%>
+                                            </div>
+                                            <div class="small">
+                                                <p class="text-justify card-text more" style="-webkit-hyphens: auto;-moz-hyphens: auto; hyphens: auto;">
+                                                    <%=user.post%>
+                                                </p>
+                                            </div>
+                                            <div>
+
+                                                <a href="/post/like/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-up"></i><%=user.like%></a>
+                                                <a href="/post/dislike/<%= user._id%>" class="card-link textsize"><i class="far fa-thumbs-down"></i> <%=user.dislike%></a>
+                                                <a href="#" class="card-link textsize" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-comment"></i></a>
+
+                                                <a href="#" class="card-link textsize"><i class="fas fa-share"></i></a>
+                                                <% if (user._username._id == loginInf.id){ %>
+                                                    <a href="/post/delete/<%= user._id%>" class="card-link textsize"><i class="fas fa-trash-alt"></i></a>
+                                                    <%}%>
+                                                        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                             </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <form>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <form>
 
-                                                                <div class="form-group">
-                                                                    <label for="message-text" class="col-form-label">Message:</label>
-                                                                    <textarea class="form-control" id="message-text"></textarea>
-                                                                    <small class=" float-right pull-right" id="counter">500 characters remaining</small>
+                                                                            <div class="form-group">
+                                                                                <label for="message-text" class="col-form-label">Message:</label>
+                                                                                <textarea class="form-control" id="message-text"></textarea>
+                                                                                <small class=" float-right pull-right" id="counter">500 characters remaining</small>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                        <button type="button" class="btn btn-primary">Send message</button>
+                                                                    </div>
                                                                 </div>
-                                                            </form>
+                                                            </div>
                                                         </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                            <button type="button" class="btn btn-primary">Send message</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+
                                             </div>
-                                            <%}%>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
                         </div>
 
                     </div>
@@ -128,5 +135,17 @@
             </div>
         </div>
     </div>
+    <footer class="navbar-light bg-white  shadow-sm p-0 mt-3">
+        <div>
+            <div class="row">
+                <div class="col-md-12 text-center pt-3">
+                    <div class="copyright">
+                        <p>© <span>2019</span> <a href="#" class="transition">Erdinç Demirok</a>
+                            <br> All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <%- include partials/footer.ejs -%>
