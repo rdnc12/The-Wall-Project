@@ -80,10 +80,17 @@ const userSchema = new mongoose.Schema({
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
 
+
+
 const User = new mongoose.model("User", userSchema);
 
 const postSchema = new mongoose.Schema({
     post: {
+        type: String,
+        max: 500,
+        default: ''
+    },
+    comment: {
         type: String,
         max: 500,
         default: ''
@@ -109,6 +116,7 @@ const postSchema = new mongoose.Schema({
 });
 
 const Post = new mongoose.model("Post", postSchema);
+
 
 
 passport.use(User.createStrategy());
@@ -266,12 +274,16 @@ app.get("/post", async(req, res) => {
 });
 app.post("/post", async(req, res) => {
     let newpost = req.body.post;
+    let newcomment = req.body.comment;
 
     const newPost = new Post({
-        post: newpost.toString(),
+        post: newpost,
+        comment: newcomment,
         _username: req.user.id,
         created: new moment()
     });
+
+
     try {
         await newPost.save();
         // res.send(newPost);
