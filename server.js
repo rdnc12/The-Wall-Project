@@ -333,8 +333,11 @@ app.get("/logout", (req, res) => {
     res.redirect("/");
 });
 
-
-http.listen(process.env.PORT, function() {
-    console.log(`Server started perfectly on ${process.env.PORT}...`);
+let port = process.env.PORT;
+if (port == null || port == '') {
+    port = 3001;
+}
+app.listen(port, function() {
+    console.log(`Server started perfectly on ${port}...`);
 
 });
