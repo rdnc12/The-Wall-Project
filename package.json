@@ -1,7 +1,7 @@
 {
     "name": "The-Wall-Project",
     "version": "1.0.0",
-    "main": "server.js",
+    "main": "index.js",
     "repository": "https://github.com/rdnc12/The-Wall-Project.git",
     "keywords": [
         "social",
