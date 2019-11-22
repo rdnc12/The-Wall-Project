@@ -35,20 +35,23 @@
 
             <!-- Icon -->
             <div class="fadeIn first">
-                <img src="" id="icon" alt="User Icon" />
+                <!-- <img src="img/logo.png" id="icon" alt="User Icon" /> -->
                 <h1>Login</h1>
             </div>
 
             <!-- Login Form -->
             <form action="/" method="POST">
                 <input type="text" id="login" class=" textAll fadeIn second " name="username" placeholder="Username">
-                <input type="text" id="password" class="textAll fadeIn third" name="password" placeholder="Password">
+                <input type="password" id="password" class="textAll fadeIn third" name="password" placeholder="Password">
                 <input type="submit" class="fadeIn fourth">
             </form>
 
-
         </div>
-
+        <div class="card-body">
+            <a class="btn btn-block btn-social btn-google" href="/auth/google" role="button">
+                <i class="fab fa-google"></i> Sign In with Google
+            </a>
+        </div>
     </div>
 
     <footer class="navbar-light bg-white fixed-bottom shadow-sm p-0">

@@ -7,6 +7,7 @@ const moment = require('moment');
 const validator = require("validator");
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const flash = require('connect-flash');
 const mongoose = require("mongoose");
 const findOrCreate = require('mongoose-findorcreate');
 const session = require("express-session");
@@ -14,7 +15,6 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const config = require('./config');
 //const cleancache = require('./middlewares/cleanCache');
 
 
@@ -30,7 +30,7 @@ app.use(session({
     secret: "erdinc",
     resave: false,
     saveUninitialized: false
-}));
+})); // control users session
 app.use(passport.initialize());
 app.use(passport.session());
 //config end
@@ -38,7 +38,7 @@ app.use(passport.session());
 
 // mongoose config
 
-mongoose.connect(config.connectionString, {
+mongoose.connect(process.env.CONNECTIONADRESS, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false
@@ -161,7 +161,7 @@ passport.use(
 passport.use(new FacebookStrategy({
         clientID: process.env.APP_ID,
         clientSecret: process.env.APP_SECRET,
-        callbackURL: "http://localhost:3000/auth/facebook/secrets"
+        callbackURL: "http://localhost:3001/auth/facebook/home"
     },
     async(accessToken, refreshToken, profile, cb) => {
         try {
@@ -333,7 +333,7 @@ app.get("/logout", (req, res) => {
 });
 
 
-http.listen(config.port, function() {
-    console.log(`Server started perfectly on ${config.port}...`);
+http.listen(process.env.PORT, function() {
+    console.log(`Server started perfectly on ${process.env.PORT}...`);
 
 });
