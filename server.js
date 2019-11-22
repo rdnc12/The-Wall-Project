@@ -31,6 +31,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 })); // control users session
+
 app.use(passport.initialize());
 app.use(passport.session());
 //config end
