@@ -1,6 +1,8 @@
 
 ## The User Story of Wall Project
 
+/// https://fathomless-dusk-90964.herokuapp.com/
+
  - When the user opens the webpage, he has two options: Login and Registration. 
  - For the first time the user needs to create their own account in order to use the Wall application.
  - He registers with this informations: username, fullname, email, password, password confirmation. 
