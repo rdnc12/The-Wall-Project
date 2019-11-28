@@ -3,13 +3,23 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="activepage" content="<%=menuId%>">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Social</title>
+
     <link rel="stylesheet" href="css/all.css" integrity="">
     <link rel="stylesheet" href="css/bootstrap.min.css" integrity="" />
     <link rel="stylesheet" href="css/style.login.css" />
     <link rel="stylesheet" href="css/post.css" />
+    <%if(menuId=='login') {%>
+
+        <%} else{ if(menuId=='post'){%>
+
+            <%}else{if(menuId=='register') {%>
+
+                <%}}}%>
+
 </head>
 
 <body>

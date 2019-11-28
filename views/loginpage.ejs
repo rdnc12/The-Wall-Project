@@ -41,16 +41,23 @@
 
             <!-- Login Form -->
             <form action="/" method="POST">
-                <input type="text" id="login" class=" textAll fadeIn second " name="username" placeholder="Username">
+                <input type="text" id="login" spellcheck="false" class=" textAll fadeIn second " name="username" placeholder="Username">
                 <input type="password" id="password" class="textAll fadeIn third" name="password" placeholder="Password">
-                <input type="submit" class="fadeIn fourth">
+                <input type="submit" class="fadeIn fourth" value="Login">
             </form>
 
         </div>
-        <div class="card-body">
-            <a class="btn btn-block btn-social btn-google" href="/auth/google" role="button">
-                <i class="fab fa-google"></i> Sign In with Google
-            </a>
+        <div>
+            <div class="card-body float-left">
+                <a class="btn btn-block btn-social btn-google" href="/register" role="button">
+                    <i class="fas fa-user-circle"></i> Register
+                </a>
+            </div>
+            <div class="card-body float-right">
+                <a class="btn btn-block btn-social btn-google" href="/auth/google" role="button">
+                    <i class="fab fa-google"></i> Sign In with Google
+                </a>
+            </div>
         </div>
     </div>
 
@@ -59,7 +66,7 @@
             <div class="row">
                 <div class="col-md-12 text-center pt-3">
                     <div class="copyright">
-                        <p>© <span>2019</span> <a href="#" class="transition">Erdinç Demirok</a>
+                        <p>© <span><%=copyDate%></span> <a href="#" class="transition">Erdinç Demirok</a>
                             <br> All rights reserved.</p>
                     </div>
                 </div>

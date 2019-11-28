@@ -23,6 +23,7 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 app.set("view engine", "ejs"); //for making ejs usable in views folder
 app.use(bodyParser.urlencoded({ extended: true })); // for post requests
 app.use(express.static("public")); //for using css js img files
+app.use(flash());
 //app.use('/libs', express.static(path.join(__dirname, 'node_modules')));
 app.use(session({
     secret: "erdinc",
@@ -183,7 +184,8 @@ passport.use(new FacebookStrategy({
 /// Login page
 app.route("/")
     .get((req, res) => {
-        res.render("loginpage");
+        let copyDate = new Date().getFullYear();
+        res.render("loginpage", { menuId: 'login', copyDate });
     })
     .post((req, res) => {
         const user = new User({
@@ -221,7 +223,7 @@ app.get('/auth/google/post',
 /// register page
 app.route("/register")
     .get((req, res) => {
-        res.render("registerpage");
+        res.render("registerpage", { menuId: 'register' });
     })
     .post(async(req, res) => {
         let usernameNew = req.body.username;
@@ -266,7 +268,7 @@ app.get("/post", async(req, res) => {
             .populate('_username', ['username', 'picture'])
             .sort({ 'created': 'desc' });
 
-        res.render('post', { users: postsAll, loginInf: req.user, moment });
+        res.render('post', { users: postsAll, loginInf: req.user, moment, menuId: 'post' });
     } else {
         res.redirect("/");
     }
